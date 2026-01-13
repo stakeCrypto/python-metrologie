@@ -121,7 +121,43 @@ print("Graphique sauvegarde : 03_histogramme.png")
 
 print("\n" + "="*50)
 print("TODO 4 - Carte de controle :")
-# Ton code ici
+
+# Calculer les limites de controle (3 sigma)
+moyenne = df['mesure'].mean()
+sigma = df['mesure'].std()
+ucl = moyenne + 3 * sigma
+lcl = moyenne - 3 * sigma
+
+plt.figure(figsize=(10, 5))
+
+# Identifier les points hors controle
+hors_controle = (df['mesure'] > ucl) | (df['mesure'] < lcl)
+dans_controle = ~hors_controle
+
+# Tracer les points (vert = OK, rouge = hors controle)
+plt.plot(df.loc[dans_controle, 'date'], df.loc[dans_controle, 'mesure'],
+         'go', markersize=5, label='Sous controle')
+plt.plot(df.loc[hors_controle, 'date'], df.loc[hors_controle, 'mesure'],
+         'ro', markersize=8, label='Hors controle')
+plt.plot(df['date'], df['mesure'], 'b-', alpha=0.3)  # Ligne de connexion
+
+# Limites de controle
+plt.axhline(y=moyenne, color='green', linestyle='-', label=f'Moyenne ({moyenne:.4f})')
+plt.axhline(y=ucl, color='orange', linestyle='--', label=f'UCL ({ucl:.4f})')
+plt.axhline(y=lcl, color='orange', linestyle='--', label=f'LCL ({lcl:.4f})')
+
+plt.xlabel('Date')
+plt.ylabel('Mesure (mm)')
+plt.title('Carte de controle (Control Chart)')
+plt.legend(loc='upper right')
+plt.grid(True, alpha=0.3)
+plt.savefig('04_carte_controle.png', dpi=100, bbox_inches='tight')
+plt.close()
+
+print(f"Moyenne : {moyenne:.4f}, Sigma : {sigma:.4f}")
+print(f"UCL : {ucl:.4f}, LCL : {lcl:.4f}")
+print(f"Points hors controle : {hors_controle.sum()}")
+print("Graphique sauvegarde : 04_carte_controle.png")
 
 # =============================================================================
 # PARTIE 5 : Graphiques multiples (subplots)
@@ -133,7 +169,37 @@ print("TODO 4 - Carte de controle :")
 
 print("\n" + "="*50)
 print("TODO 5 - Subplots :")
-# Ton code ici
+
+# Creer une figure avec 2 graphiques cote a cote
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
+
+# Graphique 1 : Evolution temporelle avec limites
+ax1.plot(df['date'], df['mesure'], 'b-o', markersize=3)
+ax1.axhline(y=nominal, color='green', linestyle='-', label='Nominal')
+ax1.axhline(y=lss, color='red', linestyle='--', label='LSS/LSI')
+ax1.axhline(y=lsi, color='red', linestyle='--')
+ax1.set_xlabel('Date')
+ax1.set_ylabel('Mesure (mm)')
+ax1.set_title('Evolution temporelle')
+ax1.legend()
+ax1.grid(True, alpha=0.3)
+ax1.tick_params(axis='x', rotation=45)
+
+# Graphique 2 : Histogramme
+ax2.hist(df['mesure'], bins=15, edgecolor='black', alpha=0.7, orientation='horizontal')
+ax2.axhline(y=nominal, color='green', linestyle='-', linewidth=2)
+ax2.axhline(y=lss, color='red', linestyle='--', linewidth=2)
+ax2.axhline(y=lsi, color='red', linestyle='--', linewidth=2)
+ax2.set_xlabel('Frequence')
+ax2.set_ylabel('Mesure (mm)')
+ax2.set_title('Distribution')
+
+# Titre global
+fig.suptitle('Rapport de metrologie - Vue combinee', fontsize=14, fontweight='bold')
+plt.tight_layout()
+plt.savefig('05_rapport_combine.png', dpi=100, bbox_inches='tight')
+plt.close()
+print("Graphique sauvegarde : 05_rapport_combine.png")
 
 print("\n" + "="*50)
 print("EXERCICE TERMINE !")
